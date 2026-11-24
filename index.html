@@ -746,27 +746,17 @@
       <p>Enter your credentials to open the PKG Label Replacer.</p>
 
       <label class="field-label" for="loginUsername">Username</label>
-      <input
-        id="loginUsername"
-        type="text"
-        autocomplete="username"
-        required
-      >
+      <input id="loginUsername" type="text" autocomplete="username" required>
 
       <label class="field-label" for="loginPassword">Password</label>
-      <input
-        id="loginPassword"
-        type="password"
-        autocomplete="current-password"
-        required
-      >
+      <input id="loginPassword" type="password" autocomplete="current-password" required>
 
       <button class="btn primary" type="submit">Log in</button>
       <p id="loginError" class="login-error" role="alert"></p>
     </form>
   </section>
 
-  <!-- Existing application -->
+  <!-- Application -->
   <div id="app" hidden>
     <main class="page">
       <header class="masthead">
@@ -898,10 +888,10 @@
     "use strict";
 
     /*
-     * CHANGE THESE TWO VALUES to set your login credentials.
+     * Change these values to set your login credentials.
      * This client-side login is a convenience lock, not secure authentication.
      */
-    const APP_USERNAME = "TestingTeam";
+    const APP_USERNAME = "Testingteam";
     const APP_PASSWORD = "BMStesting";
 
     const loginScreen = document.getElementById("loginScreen");
@@ -912,11 +902,8 @@
     loginForm.addEventListener("submit", (event) => {
       event.preventDefault();
 
-      const enteredUsername =
-        document.getElementById("loginUsername").value;
-
-      const enteredPassword =
-        document.getElementById("loginPassword").value;
+      const enteredUsername = document.getElementById("loginUsername").value;
+      const enteredPassword = document.getElementById("loginPassword").value;
 
       if (
         enteredUsername === APP_USERNAME &&
@@ -1084,13 +1071,27 @@
       return safeName || "modified_files";
     }
 
+    /*
+     * Replace only a leading "hello" prefix with "welcome".
+     * The rest of the filename, including its extension, is preserved.
+     */
+    function renameOutputPrefix(fileName) {
+      return fileName.replace(/^PF30_SW_TS/, "PF33_SW_TS");
+    }
+
     function createUniqueFileName(fileName, usedNames) {
-      const baseName = fileName.replace(/\.pkg$/i, "");
-      let outputName = `${baseName}_modified.pkg`;
+      const renamedFileName = renameOutputPrefix(fileName);
+      const extensionMatch = renamedFileName.match(/(\.[^.]*)$/);
+      const extension = extensionMatch ? extensionMatch[0] : "";
+      const baseName = extension
+        ? renamedFileName.slice(0, -extension.length)
+        : renamedFileName;
+
+      let outputName = renamedFileName;
       let counter = 2;
 
       while (usedNames.has(outputName.toLowerCase())) {
-        outputName = `${baseName}_modified_${counter}.pkg`;
+        outputName = `${baseName}_modified_${counter}${extension}`;
         counter += 1;
       }
 
@@ -1176,8 +1177,10 @@
             text = text.replaceAll(original, replacement);
           }
 
+          const outputName = createUniqueFileName(files[i].name, usedNames);
+
           zip.file(
-            createUniqueFileName(files[i].name, usedNames),
+            outputName,
             new TextEncoder().encode(text)
           );
 
